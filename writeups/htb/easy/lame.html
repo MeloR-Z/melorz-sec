@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lame | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge htb">HTB</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Lame</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">Hack The Box</strong></span>
+        <span>Tags: <span>SMB</span><span>FTP</span><span>Samba</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h1>Reconocimiento</h1>
+
+<p>comando: <code>nmap -sS -p- --open --min-rate 5000 -Pn -n 10.129.1.37 -oN nmap</code></p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-07 17:45 EST
+<p>Nmap scan report for 10.129.1.37</p>
+<p>Host is up (0.083s latency).</p>
+<p>Not shown: 65531 filtered tcp ports (no-response)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT    STATE SERVICE</p>
+<p>21/tcp  open  ftp</p>
+<p>22/tcp  open  ssh</p>
+<p>139/tcp open  netbios-ssn</p>
+<p>445/tcp open  microsoft-ds</p>
+
+<p>Nmap done: 1 IP address (1 host up) scanned in 26.81 seconds</code></pre></p>
+
+<p>vemos que hay varios puertos abiertos , vamos a ver versiones</p>
+
+<p>comando: <code>nmap -sVC -p21,22,139,445 10.129.1.37 -oN nmap1  </code></p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-07 17:49 EST
+<p>Stats: 0:00:16 elapsed; 0 hosts completed (1 up), 1 undergoing Script Scan</p>
+<p>NSE Timing: About 97.70% done; ETC: 17:49 (0:00:00 remaining)</p>
+<p>Nmap scan report for 10.129.1.37</p>
+<p>Host is up (0.10s latency).</p>
+
+<p>PORT    STATE SERVICE     VERSION</p>
+<p>21/tcp  open  ftp         vsftpd 2.3.4</p>
+<p>|_ftp-anon: Anonymous FTP login allowed (FTP code 230)</p>
+<p>| ftp-syst:</p>
+<p>|   STAT:</p>
+<p>| FTP server status:</p>
+<p>|      Connected to 10.10.14.39</p>
+<p>|      Logged in as ftp</p>
+<p>|      TYPE: ASCII</p>
+<p>|      No session bandwidth limit</p>
+<p>|      Session timeout in seconds is 300</p>
+<p>|      Control connection is plain text</p>
+<p>|      Data connections will be plain text</p>
+<p>|      vsFTPd 2.3.4 - secure, fast, stable</p>
+<p>|_End of status</p>
+<p>22/tcp  open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)</p>
+<p>| ssh-hostkey:</p>
+<p>|   1024 60:0f:cf:e1:c0:5f:6a:74:d6:90:24:fa:c4:d5:6c:cd (DSA)</p>
+<p>|_  2048 56:56:24:0f:21:1d:de:a7:2b:ae:61:b1:24:3d:e8:f3 (RSA)</p>
+<p>139/tcp open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)</p>
+<p>445/tcp open  netbios-ssn Samba smbd 3.0.20-Debian (workgroup: WORKGROUP)</p>
+<p>Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel</p>
+
+<p>Host script results:</p>
+<p>|_clock-skew: mean: 2h30m38s, deviation: 3h32m11s, median: 35s</p>
+<p>|_smb2-time: Protocol negotiation failed (SMB2)</p>
+<p>| smb-os-discovery:</p>
+<p>|   OS: Unix (Samba 3.0.20-Debian)</p>
+<p>|   Computer name: lame</p>
+<p>|   NetBIOS computer name:</p>
+<p>|   Domain name: hackthebox.gr</p>
+<p>|   FQDN: lame.hackthebox.gr</p>
+<p>|_  System time: 2025-11-07T17:50:30-05:00</p>
+<p>| smb-security-mode:</p>
+<p>|   account_used: guest</p>
+<p>|   authentication_level: user</p>
+<p>|   challenge_response: supported</p>
+<p>|_  message_signing: disabled (dangerous, but default)</p>
+
+<p>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</p>
+<p>Nmap done: 1 IP address (1 host up) scanned in 55.00 seconds</code></pre></p>
+<p>vemos que podemos usar <code>Anonymous</code> para autenticarnos en FTP</p>
+
+<hr>
+
+<h2>Enumeración FTP </h2>
+
+<p>no encontramos nada</p>
+
+<hr>
+
+<h2>Enumeración SMB </h2>
+
+<p>comando: <code>smbclient -L 10.129.1.37 -N</code></p>
+
+<p>resultado:</p>
+
+<pre><code>Anonymous login successful
+
+<p>Sharename       Type      Comment</p>
+<p>---------       ----      -------</p>
+<p>print$          Disk      Printer Drivers</p>
+<p>tmp             Disk      oh noes!</p>
+<p>opt             Disk</p>
+<p>IPC$            IPC       IPC Service (lame server (Samba 3.0.20-Debian))</p>
+<p>ADMIN$          IPC       IPC Service (lame server (Samba 3.0.20-Debian))</p>
+<p>Reconnecting with SMB1 for workgroup listing.</p>
+<p>Anonymous login successful</p>
+
+<p>Server               Comment</p>
+<p>---------            -------</p>
+
+<p>Workgroup            Master</p>
+<p>---------            -------</p>
+<p>WORKGROUP            LAME</code></pre></p>
+
+<p>Viendo <code>tmp</code> encontramos un archivo interesante que nos da pista de un posible user:</p>
+
+<pre><code>[Nov 07 17:29:20.128] [ message] [VGAuthService] VGAuthService 'build-4448496' logging at level 'normal'
+<p>[Nov 07 17:29:20.128] [ message] [VGAuthService] Pref_LogAllEntries: 1 preference groups in file '/etc/vmware-tools/vgauth.conf'</p>
+<p>[Nov 07 17:29:20.128] [ message] [VGAuthService] Group 'service'</p>
+<p>[Nov 07 17:29:20.128] [ message] [VGAuthService]         samlSchemaDir=/usr/lib/vmware-vgauth/schemas</p>
+<p>[Nov 07 17:29:20.128] [ message] [VGAuthService] Pref_LogAllEntries: End of preferences</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] VGAuthService 'build-4448496' logging at level 'normal'</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] Pref_LogAllEntries: 1 preference groups in file '/etc/vmware-tools/vgauth.conf'</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] Group 'service'</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService]         samlSchemaDir=/usr/lib/vmware-vgauth/schemas</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] Pref_LogAllEntries: End of preferences</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] Cannot load message catalog for domain 'VGAuthService', language 'C', catalog dir '.'.</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] INIT SERVICE</p>
+<p>[Nov 07 17:29:20.222] [ message] [VGAuthService] Using '/var/lib/vmware/VGAuth/aliasStore' for alias store root directory</p>
+<p>[Nov 07 17:29:20.259] [ message] [VGAuthService] SAMLCreateAndPopulateGrammarPool: Using '/usr/lib/vmware-vgauth/schemas' for SAML schemas</p>
+<p>[Nov 07 17:29:20.298] [ message] [VGAuthService] SAML_Init: Allowing 300 of clock skew for SAML date validation</p>
+<p>[Nov 07 17:29:20.298] [ message] [VGAuthService] BEGIN SERVICE</code></pre></p>
+
+<hr>
+
+<h2>Enumeracion RPC </h2>
+
+<p>hacemos uso del servicio RPC para enumerar usuarios , comando:</p>
+
+<code></code>rpcclient -U '' -N <IP> 
+<code>enundomusers</code>
+
+<p>resultados:</p>
+
+<pre><code>rpcclient $> enumdomusers
+<p>user:[games] rid:[0x3f2]</p>
+<p>user:[nobody] rid:[0x1f5]</p>
+<p>user:[bind] rid:[0x4ba]</p>
+<p>user:[proxy] rid:[0x402]</p>
+<p>user:[syslog] rid:[0x4b4]</p>
+<p>user:[user] rid:[0xbba]</p>
+<p>user:[www-data] rid:[0x42a]</p>
+<p>user:[root] rid:[0x3e8]</p>
+<p>user:[news] rid:[0x3fa]</p>
+<p>user:[postgres] rid:[0x4c0]</p>
+<p>user:[bin] rid:[0x3ec]</p>
+<p>user:[mail] rid:[0x3f8]</p>
+<p>user:[distccd] rid:[0x4c6]</p>
+<p>user:[proftpd] rid:[0x4ca]</p>
+<p>user:[dhcp] rid:[0x4b2]</p>
+<p>user:[daemon] rid:[0x3ea]</p>
+<p>user:[sshd] rid:[0x4b8]</p>
+<p>user:[man] rid:[0x3f4]</p>
+<p>user:[lp] rid:[0x3f6]</p>
+<p>user:[mysql] rid:[0x4c2]</p>
+<p>user:[gnats] rid:[0x43a]</p>
+<p>user:[libuuid] rid:[0x4b0]</p>
+<p>user:[backup] rid:[0x42c]</p>
+<p>user:[msfadmin] rid:[0xbb8]</p>
+<p>user:[telnetd] rid:[0x4c8]</p>
+<p>user:[sys] rid:[0x3ee]</p>
+<p>user:[klog] rid:[0x4b6]</p>
+<p>user:[postfix] rid:[0x4bc]</p>
+<p>user:[service] rid:[0xbbc]</p>
+<p>user:[list] rid:[0x434]</p>
+<p>user:[irc] rid:[0x436]</p>
+<p>user:[ftp] rid:[0x4be]</p>
+<p>user:[tomcat55] rid:[0x4c4]</p>
+<p>user:[sync] rid:[0x3f0]</p>
+<p>user:[uucp] rid:[</code></pre></p>
+
+<hr>
+
+
+<p>No vemos nada interesante, pero viendo versiones descubrimos que para <code>Samba 3.0.20</code> hay un exploit que nos permite ejecutar codigo Remoto, hechamos un vistazo al código para poder hacerlo manual</p>
+
+<p>explicación de la vuln:</p>
+
+
+
+<hr>
+
+<p>https://labs.hackthebox.com/achievement/machine/2041302/1</p>
+
+
+
+    </div>
+  </div>
+</body>
+</html>

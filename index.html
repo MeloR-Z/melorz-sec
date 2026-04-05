@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeloRZ | Cybersecurity Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Animated grid background -->
+  <div class="bg-grid"></div>
+  <div class="scan-line"></div>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="bracket">[</span>
+      <span class="brand-name">MeloRZ</span>
+      <span class="bracket">]</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#about" class="nav-link">// about</a></li>
+      <li><a href="#writeups" class="nav-link">// writeups</a></li>
+      <li><a href="#cheatsheets" class="nav-link">// cheatsheets</a></li>
+      <li><a href="#projects" class="nav-link">// projects</a></li>
+      <li><a href="#contact" class="nav-link">// contact</a></li>
+    </ul>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span class="status-text">ONLINE</span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="terminal-title">whoami.sh</span>
+        </div>
+        <div class="terminal-body">
+          <p class="terminal-line"><span class="prompt">root@melorz:~$</span> <span class="cmd">whoami</span></p>
+          <p class="terminal-output typing-effect" id="typing-name">Alejandro Melo — MeloRZ</p>
+          <p class="terminal-line mt-2"><span class="prompt">root@melorz:~$</span> <span class="cmd">cat role.txt</span></p>
+          <p class="terminal-output">Estudiante de Ciberseguridad</p>
+          <p class="terminal-output"><span class="tag">[Blue Team]</span> <span class="tag">[Red Team]</span> <span class="tag">[Cloud Security]</span></p>
+          <p class="terminal-line mt-2"><span class="prompt">root@melorz:~$</span> <span class="cmd">ls ./skills/</span></p>
+          <p class="terminal-output">
+            <span class="file">pentesting/</span>&nbsp;&nbsp;
+            <span class="file">soc-operations/</span>&nbsp;&nbsp;
+            <span class="file">active-directory/</span>&nbsp;&nbsp;
+            <span class="file">web-hacking/</span>
+          </p>
+          <p class="terminal-line mt-2"><span class="prompt">root@melorz:~$</span> <span class="cursor-blink">_</span></p>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-num">20+</div>
+          <div class="stat-label">Writeups</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">HTB</div>
+          <div class="stat-label">Hack The Box</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">THM</div>
+          <div class="stat-label">TryHackMe</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">CRTA</div>
+          <div class="stat-label">Certificación</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <span>SCROLL</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">ABOUT</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p class="about-lead">
+          Apasionado por la ciberseguridad ofensiva y defensiva, en constante aprendizaje del ecosistema <span class="highlight">Blue Team</span> y las técnicas de <span class="highlight">Hacking Ético</span>.
+        </p>
+        <p>
+          Mi objetivo es especializarme en <span class="highlight">Cloud Security</span>, combinando mis conocimientos en pentesting con la protección de infraestructuras en la nube. Actualmente construyendo experiencia práctica a través de plataformas como Hack The Box, TryHackMe y laboratorios propios.
+        </p>
+        <div class="skill-tags">
+          <span class="skill-tag">Nmap</span>
+          <span class="skill-tag">Metasploit</span>
+          <span class="skill-tag">Burp Suite</span>
+          <span class="skill-tag">SQLi</span>
+          <span class="skill-tag">XSS</span>
+          <span class="skill-tag">Active Directory</span>
+          <span class="skill-tag">SIEM</span>
+          <span class="skill-tag">SOC L1</span>
+          <span class="skill-tag">Linux</span>
+          <span class="skill-tag">Python</span>
+        </div>
+      </div>
+      <div class="about-focus">
+        <h3 class="focus-title">ÁREAS DE ENFOQUE</h3>
+        <div class="focus-item">
+          <div class="focus-icon">🔵</div>
+          <div>
+            <div class="focus-name">Blue Team / SOC</div>
+            <div class="focus-bar"><div class="focus-fill" style="width:75%"></div></div>
+          </div>
+        </div>
+        <div class="focus-item">
+          <div class="focus-icon">🔴</div>
+          <div>
+            <div class="focus-name">Red Team / Pentesting</div>
+            <div class="focus-bar"><div class="focus-fill" style="width:70%"></div></div>
+          </div>
+        </div>
+        <div class="focus-item">
+          <div class="focus-icon">☁️</div>
+          <div>
+            <div class="focus-name">Cloud Security</div>
+            <div class="focus-bar"><div class="focus-fill" style="width:40%"></div></div>
+          </div>
+        </div>
+        <div class="focus-item">
+          <div class="focus-icon">🌐</div>
+          <div>
+            <div class="focus-name">Web Hacking</div>
+            <div class="focus-bar"><div class="focus-fill" style="width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WRITEUPS -->
+  <section id="writeups" class="section section-dark">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">WRITEUPS</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-tabs">
+      <button class="filter-btn active" data-filter="all">ALL</button>
+      <button class="filter-btn" data-filter="htb">Hack The Box</button>
+      <button class="filter-btn" data-filter="thm">TryHackMe</button>
+      <button class="filter-btn" data-filter="portswigger">PortSwigger</button>
+    </div>
+
+    <div class="writeups-grid" id="writeups-grid">
+
+      <!-- HTB EASY -->
+      <a href="writeups/htb/easy/academy.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Academy</div>
+        <div class="card-tags">
+          <span>Web</span><span>PHP</span><span>Privesc</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/easy/bank.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Bank</div>
+        <div class="card-tags">
+          <span>Web</span><span>DNS</span><span>Upload</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/easy/knife.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Knife</div>
+        <div class="card-tags">
+          <span>PHP</span><span>RCE</span><span>Sudo</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/easy/lame.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Lame</div>
+        <div class="card-tags">
+          <span>SMB</span><span>FTP</span><span>Samba</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/easy/mirai.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Mirai</div>
+        <div class="card-tags">
+          <span>IoT</span><span>Default Creds</span><span>Forensics</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/easy/nodeblog.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">NodeBlog</div>
+        <div class="card-tags">
+          <span>NoSQLi</span><span>Node.js</span><span>Deserialization</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/medium/celestial.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty medium">MEDIUM</div>
+        <div class="card-title">Celestial</div>
+        <div class="card-tags">
+          <span>Node.js</span><span>Deserialization</span><span>Cron</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/htb/medium/jeeves.html" class="writeup-card" data-category="htb">
+        <div class="card-badge htb">HTB</div>
+        <div class="card-difficulty medium">MEDIUM</div>
+        <div class="card-title">Jeeves</div>
+        <div class="card-tags">
+          <span>Jenkins</span><span>KeePass</span><span>Windows</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- THM -->
+      <a href="writeups/thm/easy/billing.html" class="writeup-card" data-category="thm">
+        <div class="card-badge thm">THM</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Billing</div>
+        <div class="card-tags">
+          <span>MagnusBilling</span><span>RCE</span><span>Sudo</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/thm/easy/machine-hijack.html" class="writeup-card" data-category="thm">
+        <div class="card-badge thm">THM</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Machine Hijack</div>
+        <div class="card-tags">
+          <span>Privesc</span><span>Linux</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/thm/easy/machine-startup.html" class="writeup-card" data-category="thm">
+        <div class="card-badge thm">THM</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Machine Startup</div>
+        <div class="card-tags">
+          <span>FTP</span><span>Web</span><span>Linux</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <!-- PortSwigger -->
+      <a href="writeups/portswigger/sqli-blind-conditional.html" class="writeup-card" data-category="portswigger">
+        <div class="card-badge ps">PS Lab</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Blind SQLi — Condicional</div>
+        <div class="card-tags">
+          <span>SQLi</span><span>Blind</span><span>SUBSTRING</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/portswigger/sqli-blind-error.html" class="writeup-card" data-category="portswigger">
+        <div class="card-badge ps">PS Lab</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Blind SQLi — Error Based</div>
+        <div class="card-tags">
+          <span>SQLi</span><span>Blind</span><span>Errors</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+      <a href="writeups/portswigger/sqli-blind-delay.html" class="writeup-card" data-category="portswigger">
+        <div class="card-badge ps">PS Lab</div>
+        <div class="card-difficulty easy">EASY</div>
+        <div class="card-title">Blind SQLi — Time Delays</div>
+        <div class="card-tags">
+          <span>SQLi</span><span>Blind</span><span>Time-Based</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- CHEATSHEETS -->
+  <section id="cheatsheets" class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">CHEAT SHEETS</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="cheatsheets-grid">
+      <a href="cheatsheets/sqli.html" class="cheat-card">
+        <div class="cheat-icon">💉</div>
+        <div class="cheat-content">
+          <div class="cheat-title">SQL Injection</div>
+          <div class="cheat-desc">UNION SELECT, Blind SQLi, Time-Based, Error-Based — técnicas y payloads esenciales.</div>
+        </div>
+        <div class="cheat-arrow">→</div>
+      </a>
+
+      <a href="cheatsheets/xss.html" class="cheat-card">
+        <div class="cheat-icon">⚡</div>
+        <div class="cheat-content">
+          <div class="cheat-title">Cross-Site Scripting (XSS)</div>
+          <div class="cheat-desc">Reflected, Stored, DOM-based XSS — payloads, bypass de filtros y técnicas de explotación.</div>
+        </div>
+        <div class="cheat-arrow">→</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section section-dark">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">PROJECTS</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="projects-grid">
+      <div class="project-card coming-soon">
+        <div class="project-badge-coming">COMING SOON</div>
+        <div class="project-icon">🔬</div>
+        <div class="project-title">SOC Lab</div>
+        <div class="project-desc">
+          Laboratorio personal de operaciones SOC. Implementación de un entorno de detección y respuesta a incidentes con herramientas SIEM, análisis de logs y casos de uso reales.
+        </div>
+        <div class="project-tech">
+          <span>Elastic SIEM</span>
+          <span>Splunk</span>
+          <span>Wazuh</span>
+          <span>TheHive</span>
+        </div>
+        <div class="project-status">
+          <span class="pulse-dot"></span>
+          En desarrollo
+        </div>
+      </div>
+
+      <div class="project-card coming-soon">
+        <div class="project-badge-coming">COMING SOON</div>
+        <div class="project-icon">☁️</div>
+        <div class="project-title">Cloud Security Lab</div>
+        <div class="project-desc">
+          Entorno de práctica en AWS/Azure orientado a identificar y mitigar misconfiguraciones en la nube. Enfocado en IAM, S3, redes y auditoría de seguridad cloud.
+        </div>
+        <div class="project-tech">
+          <span>AWS</span>
+          <span>Azure</span>
+          <span>Terraform</span>
+          <span>CloudTrail</span>
+        </div>
+        <div class="project-status">
+          <span class="pulse-dot"></span>
+          Planificado
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">CONTACT</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="contact-content">
+      <p class="contact-lead">¿Tienes alguna pregunta sobre mis writeups o quieres conectar?</p>
+
+      <div class="social-links">
+        <a href="https://www.linkedin.com/in/alejandro-melo-rodr%C3%ADguez-821a56392/" target="_blank" class="social-card">
+          <div class="social-icon linkedin-icon">in</div>
+          <div class="social-info">
+            <div class="social-name">LinkedIn</div>
+            <div class="social-handle">Alejandro Melo Rodríguez</div>
+          </div>
+          <div class="social-arrow">↗</div>
+        </a>
+
+        <a href="https://app.hackthebox.com/users/MeloRZ" target="_blank" class="social-card">
+          <div class="social-icon htb-icon">HTB</div>
+          <div class="social-info">
+            <div class="social-name">Hack The Box</div>
+            <div class="social-handle">MeloRZ</div>
+          </div>
+          <div class="social-arrow">↗</div>
+        </a>
+
+        <a href="https://tryhackme.com/p/MeloRZ" target="_blank" class="social-card">
+          <div class="social-icon thm-icon">THM</div>
+          <div class="social-info">
+            <div class="social-name">TryHackMe</div>
+            <div class="social-handle">MeloRZ</div>
+          </div>
+          <div class="social-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-content">
+      <span class="footer-brand">[MeloRZ] — Alejandro Melo</span>
+      <span class="footer-copy">Built with dedication & curiosity · 2025</span>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

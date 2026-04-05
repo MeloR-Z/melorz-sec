@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mirai | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge htb">HTB</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Mirai</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">Hack The Box</strong></span>
+        <span>Tags: <span>IoT</span><span>Default Creds</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h1>Intrusion Inicial</h1>
+
+
+<h3>Reconocimiento de puertos</h3>
+
+<p>comando: <code>nmap -sS -p- --open --min-rate 5000 -Pn -n 10.129.1.49 -oN nmap/mirai_nmap</code></p>
+
+<p>Resultado:</p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-08 00:15 EST
+<p>Nmap scan report for 10.129.1.49</p>
+<p>Host is up (0.90s latency).</p>
+<p>Not shown: 50230 filtered tcp ports (no-response), 15301 closed tcp ports (reset)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT      STATE SERVICE</p>
+<p>22/tcp    open  ssh</p>
+<p>53/tcp    open  domain</p>
+<p>80/tcp    open  http</p>
+<p>32400/tcp open  plex</p>
+
+<p>Nmap done: 1 IP address (1 host up) scanned in 31.96 seconds</code></pre></p>
+<p>vemos que el puerto 22,53,80,32400 estan <code>open</code> , vamos a ver sus versiones y a lanzar un escaneo de vulnerabilidades comunes.</p>
+
+<p>comando: <code>nmap -sVC -p22,53,80,32400 10.129.1.49 -oN nmap/mirai_nmap2</code></p>
+
+<p>resultado:</p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-08 00:19 EST
+<p>Nmap scan report for 10.129.1.49</p>
+<p>Host is up (0.088s latency).</p>
+
+<p>PORT      STATE SERVICE VERSION</p>
+<p>22/tcp    open  ssh     OpenSSH 6.7p1 Debian 5+deb8u3 (protocol 2.0)</p>
+<p>| ssh-hostkey:</p>
+<p>|   1024 aa:ef:5c:e0:8e:86:97:82:47:ff:4a:e5:40:18:90:c5 (DSA)</p>
+<p>|   2048 e8:c1:9d:c5:43:ab:fe:61:23:3b:d7:e4:af:9b:74:18 (RSA)</p>
+<p>|   256 b6:a0:78:38:d0:c8:10:94:8b:44:b2:ea:a0:17:42:2b (ECDSA)</p>
+<p>|_  256 4d:68:40:f7:20:c4:e5:52:80:7a:44:38:b8:a2:a7:52 (ED25519)</p>
+<p>53/tcp    open  domain  dnsmasq 2.76</p>
+<p>| dns-nsid:</p>
+<p>|_  bind.version: dnsmasq-2.76</p>
+<p>80/tcp    open  http    lighttpd 1.4.35</p>
+<p>|_http-title: Site doesn't have a title (text/html; charset=UTF-8).</p>
+<p>|_http-server-header: lighttpd/1.4.35</p>
+<p>32400/tcp open  http    Plex Media Server httpd</p>
+<p>|_http-title: Unauthorized</p>
+<p>| http-auth:</p>
+<p>| HTTP/1.1 401 Unauthorized\x0D</p>
+<p>|_  Server returned status 401 but no WWW-Authenticate header.</p>
+<p>|_http-favicon: Plex</p>
+<p>|_http-cors: HEAD GET POST PUT DELETE OPTIONS</p>
+<p>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+
+<p>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</p>
+<p>Nmap done: 1 IP address (1 host up) scanned in 23.29 seconds</code></pre></p>
+
+<hr>
+
+<h3>Enumeracion de los servidores Web</h3>
+
+<p>intentamos entrar a el servidor web en el puerto <strong>80</strong> pero no la pag esta block , pero el otro server web <strong>32400</strong> si nos sirve un sitio web</p>
+
+<em>[imagen]</em>
+
+<h3>Fuzzing </h3>
+
+<p>comando: <code>gobuster dir -u http://mirai.htb:32400/ -w <worlist_path></code></p>
+
+<p>no encontramos nada interesante</p>
+
+<hr>
+
+<h3>Vemos las funcionalidades de la web en busca de vulns </h3>
+
+<p>No encontramos nada</p>
+<h3>Fuzzing al servidor web del puerto 80</h3>
+
+<em>[imagen]</em>
+<p>Encontramos un panel admin:</p>
+
+<em>[imagen]</em>
+<p>es un panel de inicio de sesion de pi-hole , probamos credenciales por defecto <code>user:pi</code> <code>password:raspberry</code> pero no funciona. la probamos para autenticarnos en ssh y si funciona</p>
+
+
+<hr>
+
+
+
+<h1>PrivEsc</h1>
+
+<em>[imagen]</em>
+<p>vemos que tenemos permiso para ejecutar todos los comandos como root, hacemos un <code>sudo su</code> y somos usuario <strong>root</strong></p>
+
+<em>[imagen]</em>
+<p>vemos esto en el archivo root.txt y al parecer la flag no esta aqui</p>
+
+<p>vemos que el mensaje dice que la flag esta en un dispositivo conectado a la maquina</p>
+
+<h3>Enumeracion de dispositivos conectados</h3>
+
+<p>comando: <code>df</code></p>
+<p>resultado:</p>
+<pre><code>ilesystem     1K-blocks    Used Available Use% Mounted on
+<p>aufs             8856504 2853976   5529596  35% /</p>
+<p>tmpfs             102396    4884     97512   5% /run</p>
+<p>/dev/sda1        1354528 1354528         0 100% /lib/live/mount/persistence/sda1</p>
+<p>/dev/loop0       1267456 1267456         0 100% /lib/live/mount/rootfs/filesystem.squashfs</p>
+<p>tmpfs             255988       0    255988   0% /lib/live/mount/overlay</p>
+<p>/dev/sda2        8856504 2853976   5529596  35% /lib/live/mount/persistence/sda2</p>
+<p>devtmpfs           10240       0     10240   0% /dev</p>
+<p>tmpfs             255988       8    255980   1% /dev/shm</p>
+<p>tmpfs               5120       4      5116   1% /run/lock</p>
+<p>tmpfs             255988       0    255988   0% /sys/fs/cgroup</p>
+<p>tmpfs             255988       8    255980   1% /tmp</p>
+<p>/dev/sdb            8887      93      8078   2% /media/usbstick</p>
+<p>tmpfs              51200       0     51200   0% /run/user/999</p>
+<p>tmpfs              51200       0     51200   0% /run/user/1000</code></pre></p>
+<p>vemos que hay un <code>usbstick</code> , vamos a ver que hay</p>
+
+<p>vamos un archivo que dice que se ha borrado la info de la usb pero aplicamos el comando <code>strings /dev/sbd</code> para ver info oculta de la usb y encontramos la flag</p>
+
+<hr>
+
+
+<hr>
+
+
+    </div>
+  </div>
+</body>
+</html>

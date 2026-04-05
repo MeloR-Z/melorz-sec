@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NodeBlog | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge htb">HTB</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">NodeBlog</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">Hack The Box</strong></span>
+        <span>Tags: <span>NoSQLi</span><span>Deserialization</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h1>INT INICIAL </h1>
+
+<p>primeros hacemos un escaneo de puertos</p>
+<code>└─$ nmap -sS -p- --open --min-rate 5000 -Pn -n $ip -oN nmap</code>
+
+<p>resultados:</p>
+
+<code></code>`python 
+<p>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-29 20:24 EST</p>
+<p>Nmap scan report for 10.129.21.195</p>
+<p>Host is up (1.6s latency).</p>
+<p>Not shown: 41225 filtered tcp ports (no-response), 24308 closed tcp ports (reset)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT     STATE SERVICE</p>
+<p>22/tcp   open  ssh</p>
+<p>5000/tcp open  upnp</p>
+<pre><code>lazamos otro escaneo para ver versiones y vemos que el puerto 5000 , realmente almacena un servidor web.</code></pre>python
+<p>Starting Nmap 7.95 ( https://nmap.org ) at 2025-11-29 20:33 EST</p>
+<p>Nmap scan report for 10.129.21.195</p>
+<p>Host is up (0.11s latency).</p>
+
+<p>PORT     STATE SERVICE VERSION</p>
+<p>22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)</p>
+<p>| ssh-hostkey:</p>
+<p>|   3072 ea:84:21:a3:22:4a:7d:f9:b5:25:51:79:83:a4:f5:f2 (RSA)</p>
+<p>|   256 b8:39:9e:f4:88:be:aa:01:73:2d:10:fb:44:7f:84:61 (ECDSA)</p>
+<p>|_  256 22:21:e9:f4:85:90:87:45:16:1f:73:36:41:ee:3b:32 (ED25519)</p>
+<p>5000/tcp open  http    Node.js (Express middleware)</p>
+<p>|_http-title: Blog</p>
+<p>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+
+<p>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .</p>
+<p>Nmap done: 1 IP address (1 host up) scanned in 16.27 seconds</p>
+
+<pre><code>---
+
+<h2>Explotacion Web</h2>
+
+<h3>Intento de bypass login</h3>
+
+<em>[imagen]</em>
+
+<p>vemos que hay un panel de login donde probamos SQLi y NoSQLi de la cual funciono la NoSQLi con el siguiente payload :</p>
+
+<em>[imagen]</em>
+<p>con esta vuln ya logramos bypassear el loginform</p>
+
+<h3>XEE</h3>
+
+<p>vemos que el botón de upload nos permite subir archivos <em>XML</em></p>
+<em>[imagen]</em>
+
+<p>probamos a subir el siguiente archivo:</code></pre>xml</p>
+<?xml version="1.0" encoding="UTF-8"?>
+<user>
+    <id>1</id>
+    <name>Ana</name>
+    <email>ana@example.com</email>
+</user>
+<code></code>`
+
+    </div>
+  </div>
+</body>
+</html>

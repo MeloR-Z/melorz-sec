@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blind SQLi — Visible Error | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge ps">PS Lab</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Blind SQLi — Visible Error</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">PortSwigger Labs</strong></span>
+        <span>Tags: <span>SQLi</span><span>Blind</span><span>Error Visible</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<p>Una vez verificada la SQLi con <code>'</code> procedemos a la explotacion</p>
+
+<em>[imagen]</em>
+
+<p>Como podemos ver hay un error visible que podemos aprovechar</p>
+
+<hr>
+
+<h2>Explotación</h2>
+
+<p>Vamos a hacer uso de CAST() para convertir un tipo de dato a otro y que salten errores en pantalla</p>
+
+<p>1 - <code>' AND 1=CAST((SELECT username FROM users LIMIT 1) as int)--</code></p>
+<p>este payload nos va a permitir convertir el tipo de datos que alberga la columna <code>username</code> a un <em>int</em> y va a saltar error porque el tipo de dato de <code>username</code> es <strong>STRING</strong> y nos mostrara el valor de username para la FILA 1 por <code>LIMIT 1</code></p>
+
+<em>[imagen]</em>
+
+<p>2 - <code>' AND 1=CAST((SELECT password FROM users LIMIT 1) as int)--  </code></p>
+<p>ahora que ya sabemos que el username#1 es <em>administrator</em> podemos mostrar la password en el error con este payload, similar al otro y siguiendo la misma lógica</p>
+
+<em>[imagen]</em>
+
+<hr>
+<strong>END</strong>
+
+
+
+    </div>
+  </div>
+</body>
+</html>

